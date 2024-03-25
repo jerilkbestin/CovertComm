@@ -3,8 +3,7 @@ import random
 import string
 import sys
 import encrypt_decrypt
-
-current_timer = None
+import random
 
 # Generate key
 key = b'\xb7\x8f\x1f\xa2}/\xc1\xc9E\xbe\xc7\xcc\x10\x0bz\x9c'
@@ -20,8 +19,9 @@ def encode_message_in_ip_header(message, target_ip, target_port):
     for part in parts:
         ident = int.from_bytes(part.encode(), 'big')
         payload = generate_random_payload()
+        srcport=random.randint(1024,65535)
         try:
-            packet = IP(dst=target_ip, id=ident) / TCP(dport=target_port) / Raw(load=payload)
+            packet = IP(dst=target_ip, id=ident) / TCP(sport=srcport,dport=target_port) / Raw(load=payload)
             send(packet, verbose=False)
         except Exception as e:
             print(f"Error sending packet: {e}")
@@ -45,17 +45,18 @@ def packet_callback(packet):
         if message_part:
             whole_message += message_part
             # if it ends with "#", then it is the last message
-            if whole_message.endswith("#"):
-                function_to_call()
+            if whole_message.endswith("\x00"):
+                message_decryptor()
 
 
-def function_to_call():
+def message_decryptor():
     global whole_message
-    print("\n\nRECEIVED ENCRYPTED MESSAGE IS:", whole_message[:-2])
+    print("\n\nRECEIVED ENCRYPTED MESSAGE IS:", whole_message)
     # decrypt message
     decrypted_message = encrypt_decrypt.decrypt_message_aes(key, whole_message[:-2])
     print("\n\nRECEIVED DECRYPTED MESSAGE IS:",decrypted_message, "\n\nChat:")
     whole_message = ""
+    # Place your function logic here
 
 # Function to start sniffing in a separate thread
 def start_sniffing(interface, listen_port):
@@ -76,7 +77,7 @@ def interactive_mode(interface, target_ip, listen_port):
             # Encrypt message
             ciphertext = encrypt_decrypt.encrypt_message_aes(key, message)
             print(f"\nSENT ENCRYPTED MESSAGE: {ciphertext}")
-            encode_message_in_ip_header(ciphertext+"#", target_ip, listen_port)
+            encode_message_in_ip_header(ciphertext+"\x00", target_ip, listen_port)
     except KeyboardInterrupt:
         print("\nExiting.")
     finally:
