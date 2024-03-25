@@ -3,7 +3,6 @@ import random
 import string
 import sys
 import encrypt_decrypt
-import random
 
 # Generate key
 key = b'\xb7\x8f\x1f\xa2}/\xc1\xc9E\xbe\xc7\xcc\x10\x0bz\x9c'
