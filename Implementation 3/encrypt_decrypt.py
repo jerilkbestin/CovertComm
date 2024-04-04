@@ -16,13 +16,14 @@ def encrypt_message_aes(key, message):
     return iv + ciphertext
 
 def decrypt_message_aes(key, ciphertext):
-    #print(ciphertext)
-    iv = ciphertext[:32]
-    ciphertext = ciphertext[32:]
-    #print(ciphertext)
-    iv = bytes.fromhex(iv)
-    ciphertext = bytes.fromhex(ciphertext)
-    cipher = Cipher(algorithms.AES(key), modes.CFB(iv), backend=default_backend())
-    decryptor = cipher.decryptor()
-    plaintext = decryptor.update(ciphertext) + decryptor.finalize()
-    return plaintext.decode()
+    try:
+        iv = ciphertext[:32]
+        ciphertext = ciphertext[32:]
+        iv = bytes.fromhex(iv)
+        ciphertext = bytes.fromhex(ciphertext)
+        cipher = Cipher(algorithms.AES(key), modes.CFB(iv), backend=default_backend())
+        decryptor = cipher.decryptor()
+        plaintext = decryptor.update(ciphertext) + decryptor.finalize()
+        return plaintext.decode()
+    except UnicodeDecodeError:
+        return "GIBBERISH"
