@@ -5,7 +5,8 @@ from chat_logic import password_to_aes_key, encode_message_in_ip_header, Message
 import encrypt_decrypt
 
 class SnifferThread(QThread):
-    new_message_signal = pyqtSignal(str)
+    # Updated signal to include a flag indicating if the message is received
+    new_message_signal = pyqtSignal(str, bool)
 
     def __init__(self, interface, listen_port, processor):
         super().__init__()
@@ -26,10 +27,10 @@ class ChatGUI(QMainWindow):
 
         self.initUI()
 
-        self.processor = MessageProcessor(target_ip, listen_port, self.key, self.display_message)
+        # Pass a lambda to prepend "Them: " for received messages
+        self.processor = MessageProcessor(target_ip, listen_port, self.key, lambda msg: self.display_message(msg, True))
         self.sniffer_thread = SnifferThread(interface, listen_port, self.processor)
-        self.sniffer_thread.new_message_signal.connect(self.display_message)
-        self.processor.message_callback = self.sniffer_thread.new_message_signal.emit
+        self.sniffer_thread.new_message_signal.connect(lambda msg, received: self.display_message(msg, received))
         self.sniffer_thread.start()
 
     def initUI(self):
@@ -57,16 +58,19 @@ class ChatGUI(QMainWindow):
         message = self.msg_entry.text()
         if message:
             ciphertext = encrypt_decrypt.encrypt_message_aes(self.key, message)
-            self.display_message("You: " + message)
+            # Explicitly specify 'received=False' for sent messages
+            self.display_message("You: " + message, False)
             encode_message_in_ip_header(ciphertext + "\x00", self.target_ip, self.listen_port)
             self.msg_entry.clear()
 
-    def display_message(self, message):
-        self.chat_log.append(message)
+    # Updated to prepend "Them: " for received messages based on the 'received' flag
+    def display_message(self, message, received=False):
+        prefix = "Them: " if received else ""
+        self.chat_log.append(prefix + message)
 
 if __name__ == "__main__":
     if len(sys.argv) != 5:
-        print("Usage: python chat_gui.py <network_adapter> <target_ip> <listen_port> <password>")
+        print("Usage: python chat_frontend_pyqt.py <network_adapter> <target_ip> <listen_port> <password>")
         sys.exit(1)
 
     app = QApplication(sys.argv)
