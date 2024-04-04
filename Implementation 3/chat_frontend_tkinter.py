@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import scrolledtext
+from tkinter import scrolledtext, font
 from threading import Thread
 import sys
 from chat_logic import password_to_aes_key, encode_message_in_ip_header, MessageProcessor, start_sniffing
@@ -15,8 +15,11 @@ class ChatGUI:
         
         master.title("CovertComms Chat")
 
+        # Define a font to be used in the ScrolledText widget
+        text_font = font.Font(family='Arial', size=10, weight='normal')  # Example font, adjust as needed
+
         # Center-align the chat log and make it occupy most of the window
-        self.chat_log = scrolledtext.ScrolledText(master, state='disabled', width=60, height=20)
+        self.chat_log = scrolledtext.ScrolledText(master, state='disabled', width=60, height=20, font=text_font)
         self.chat_log.pack(padx=20, pady=20)
 
         # Frame for entry and button to be centered together
