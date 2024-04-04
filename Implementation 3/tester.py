@@ -14,10 +14,14 @@ def password_to_aes_key(password):
     return aes_key
 
 # Generate key
-key = b"\xe9?\x8e\xf8\x0f\x9a'\x96j\x90\xf7\t{6\xc7\x91"
+# key = b"\xe9?\x8e\xf8\x0f\x9a'\x96j\x90\xf7\t{6\xc7\x91"
 
 # Function to generate random payload
-def generate_random_payload(length=5):
+def generate_random_payload():
+    # Define the min and max length of the payload
+    min_length = 1
+    max_length = 28 #Adjusted for the lowest MTU possible minus the IP and TCP headers
+    length = random.randint(min_length, max_length)
     letters = string.ascii_letters
     return ''.join(random.choice(letters) for i in range(length))
 
