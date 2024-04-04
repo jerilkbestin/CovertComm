@@ -1,0 +1,44 @@
+import threading
+import sys
+from chat_logic import password_to_aes_key, encode_message_in_ip_header, MessageProcessor, start_sniffing
+import encrypt_decrypt
+
+def display_message(message, received=False):
+    """
+    Display the message in the console.
+    Prefix 'Them: ' for received messages, 'You: ' for sent messages.
+    """
+    prefix = "Them: " if received else "You: "
+    print(f"\r{prefix}{message}\n> ", end="")
+
+def send_message(interface, target_ip, target_port, key):
+    """
+    Send message function to read from the console and send messages.
+    """
+    try:
+        while True:
+            message = input("> ").strip()
+            if message.lower() == "exit":
+                print("Exiting chat...")
+                break
+            if message:  # Don't process empty messages
+                # Encrypt and send the message
+                ciphertext = encrypt_decrypt.encrypt_message_aes(key, message)
+                encode_message_in_ip_header(ciphertext + "\x00", target_ip, target_port)
+                display_message(message, received=False)
+    except KeyboardInterrupt:
+        print("\nExiting chat...")
+
+if __name__ == "__main__":
+    if len(sys.argv) != 5:
+        print("Usage: python chat_cli.py <network_adapter> <target_ip> <listen_port> <password>")
+        sys.exit(1)
+
+    interface, target_ip, listen_port, password = sys.argv[1:5]
+    key = password_to_aes_key(password)
+
+    processor = MessageProcessor(target_ip, int(listen_port), key, lambda msg: display_message(msg, True))
+    sniffer_thread = threading.Thread(target=lambda: start_sniffing(interface, int(listen_port), processor), daemon=True)
+    sniffer_thread.start()
+
+    send_message(interface, target_ip, int(listen_port), key)
