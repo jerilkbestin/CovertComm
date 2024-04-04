@@ -1,3 +1,5 @@
+from prompt_toolkit import PromptSession
+from prompt_toolkit.patch_stdout import patch_stdout
 import threading
 import sys
 from chat_logic import password_to_aes_key, encode_message_in_ip_header, MessageProcessor, start_sniffing
@@ -6,28 +8,31 @@ import encrypt_decrypt
 def display_message(message, received=False):
     """
     Display the message in the console.
-    Prefix 'Them: ' for received messages, 'You: ' for sent messages.
+    Prefix 'Them: ' for received messages.
     """
-    prefix = "Them: " if received else "You: "
-    print(f"\r{prefix}{message}\n> ", end="")
+    print(f"\r{'Them: ' if received else 'You: '}{message}")
 
-def send_message(interface, target_ip, target_port, key):
+def send_message(session, interface, target_ip, target_port, key):
     """
-    Send message function to read from the console and send messages.
+    Use prompt_toolkit's session.prompt() to handle input.
+    This allows asynchronous message display without interrupting user input.
     """
-    try:
-        while True:
-            message = input("> ").strip()
+    while True:
+        try:
+            # The patch_stdout context manager allows other threads to write to stdout
+            # without interfering with the input buffer.
+            with patch_stdout():
+                message = session.prompt("> ").strip()
             if message.lower() == "exit":
                 print("Exiting chat...")
                 break
             if message:  # Don't process empty messages
-                # Encrypt and send the message
                 ciphertext = encrypt_decrypt.encrypt_message_aes(key, message)
                 encode_message_in_ip_header(ciphertext + "\x00", target_ip, target_port)
-                display_message(message, received=False)
-    except KeyboardInterrupt:
-        print("\nExiting chat...")
+                # No need to manually display "You: message" because prompt_toolkit handles it.
+        except KeyboardInterrupt:
+            print("\nExiting chat...")
+            break
 
 if __name__ == "__main__":
     if len(sys.argv) != 5:
@@ -41,4 +46,6 @@ if __name__ == "__main__":
     sniffer_thread = threading.Thread(target=lambda: start_sniffing(interface, int(listen_port), processor), daemon=True)
     sniffer_thread.start()
 
-    send_message(interface, target_ip, int(listen_port), key)
+    # Create a PromptSession instance for managing console input.
+    session = PromptSession()
+    send_message(session, interface, target_ip, int(listen_port), key)
