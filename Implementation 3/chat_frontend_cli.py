@@ -36,7 +36,7 @@ def send_message(session, interface, target_ip, target_port, key):
 
 if __name__ == "__main__":
     if len(sys.argv) != 5:
-        print("Usage: python chat_cli.py <network_adapter> <target_ip> <listen_port> <password>")
+        print("Usage: python chat_frontend_cli.py <network_adapter> <target_ip> <listen_port> <password>")
         sys.exit(1)
 
     interface, target_ip, listen_port, password = sys.argv[1:5]
