@@ -51,7 +51,7 @@ class ChatGUI:
 
 if __name__ == "__main__":
     if len(sys.argv) != 5:
-        print("Usage: python chat_gui.py <network_adapter> <target_ip> <listen_port> <password>")
+        print("Usage: python chat_frontend_tkinter.py <network_adapter> <target_ip> <listen_port> <password>")
         sys.exit(1)
 
     root = tk.Tk()
