@@ -13,19 +13,24 @@ class ChatGUI:
         self.listen_port = listen_port
         self.key = password_to_aes_key(password)
         
-        master.title("Secure Chat")
-        
-        self.chat_log = scrolledtext.ScrolledText(master, state='disabled')
-        self.chat_log.grid(row=0, column=0, columnspan=2)
-        
-        self.msg_entry = tk.Entry(master)
-        self.msg_entry.grid(row=1, column=0)
-        
-        self.send_button = tk.Button(master, text="Send", command=self.send_message)
-        self.send_button.grid(row=1, column=1)
-        
+        master.title("CovertComms Chat")
+
+        # Center-align the chat log and make it occupy most of the window
+        self.chat_log = scrolledtext.ScrolledText(master, state='disabled', width=60, height=20)
+        self.chat_log.pack(padx=20, pady=20)
+
+        # Frame for entry and button to be centered together
+        self.entry_frame = tk.Frame(master)
+        self.entry_frame.pack(pady=10)
+
+        self.msg_entry = tk.Entry(self.entry_frame, width=53)
+        self.msg_entry.pack(side=tk.LEFT, padx=(0, 10))
+
+        self.send_button = tk.Button(self.entry_frame, text="Send", command=self.send_message)
+        self.send_button.pack(side=tk.RIGHT)
+
         self.processor = MessageProcessor(target_ip, listen_port, self.key, self.display_message)
-        self.sniffer_thread = Thread(target=start_sniffing, args=(interface, listen_port, self.processor), daemon=True)
+        self.sniffer_thread = Thread(target=lambda: start_sniffing(interface, listen_port, self.processor), daemon=True)
         self.sniffer_thread.start()
         
     def send_message(self):
@@ -33,11 +38,15 @@ class ChatGUI:
         if message:
             ciphertext = encrypt_decrypt.encrypt_message_aes(self.key, message)
             encode_message_in_ip_header(ciphertext + "\x00", self.target_ip, self.listen_port)
+            self.display_message(f"You: {message}", sent=True)
             self.msg_entry.delete(0, tk.END)
     
-    def display_message(self, message):
+    def display_message(self, message, sent=False):
+        if not sent:
+            message = f"Them: {message}"
         self.chat_log.config(state='normal')
         self.chat_log.insert(tk.END, message + '\n')
+        self.chat_log.yview(tk.END)  # Auto-scroll to the bottom
         self.chat_log.config(state='disabled')
 
 if __name__ == "__main__":
