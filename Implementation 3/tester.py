@@ -68,7 +68,6 @@ def message_decryptor():
     decrypted_message = encrypt_decrypt.decrypt_message_aes(key, whole_message[:-2])
     print("\n\nRECEIVED DECRYPTED MESSAGE IS:",decrypted_message, "\n\nChat:")
     whole_message = ""
-    # Place your function logic here
 
 # Function to start sniffing in a separate thread
 def start_sniffing(interface, listen_port):
