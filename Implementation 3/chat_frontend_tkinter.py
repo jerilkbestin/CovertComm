@@ -13,7 +13,7 @@ class ChatGUI:
         self.listen_port = listen_port
         self.key = password_to_aes_key(password)
         
-        master.title("CovertComms Chat")
+        master.title("CovertComm Chat")
 
         # Define a font to be used in the ScrolledText widget
         text_font = font.Font(family='Arial', size=10, weight='normal')  # Example font, adjust as needed
