@@ -34,7 +34,7 @@ class ChatGUI(QMainWindow):
         self.sniffer_thread.start()
 
     def initUI(self):
-        self.setWindowTitle("CovertComms Chat")
+        self.setWindowTitle("CovertComm Chat")
         self.setGeometry(100, 100, 600, 400)
 
         layout = QVBoxLayout()
