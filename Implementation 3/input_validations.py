@@ -37,7 +37,7 @@ def validate_all(interface, target_ip, listen_port_str, password):
     if not validate_ip_address(target_ip):
         return False, "Error: Invalid IP address."
     if not validate_port(listen_port_str):
-        return False, "Error: Invalid port number. Port must be between 1024 and 65535."
+        return False, "Error: Invalid port number. Port must be between 0 and 65535."
     
     # Updated to handle the new return signature of validate_password
     password_valid, password_message = validate_password(password)
