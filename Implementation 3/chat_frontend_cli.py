@@ -4,6 +4,8 @@ import threading
 import sys
 from chat_logic import password_to_aes_key, encode_message_in_ip_header, MessageProcessor, start_sniffing
 import encrypt_decrypt
+from input_validations import validate_network_adapter, validate_ip_address, validate_port, validate_password
+
 
 def display_message(message, received=False):
     """
@@ -40,6 +42,20 @@ if __name__ == "__main__":
         sys.exit(1)
 
     interface, target_ip, listen_port, password = sys.argv[1:5]
+
+    if not validate_network_adapter(interface):
+        print("Error: Invalid network adapter.")
+        sys.exit(1)
+    if not validate_ip_address(target_ip):
+        print("Error: Invalid IP address.")
+        sys.exit(1)
+    if not validate_port(listen_port):
+        print("Error: Invalid port number. Port must be between 1024 and 65535.")
+        sys.exit(1)
+    if not validate_password(password):
+        print("Error: Password must be between 8 and 20 characters.")
+        sys.exit(1)
+
     key = password_to_aes_key(password)
 
     processor = MessageProcessor(target_ip, int(listen_port), key, lambda msg: display_message(msg, True))
