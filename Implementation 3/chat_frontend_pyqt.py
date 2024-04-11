@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QTextEdit, QLineEdit, QPu
 from PyQt5.QtCore import QThread, pyqtSignal
 from chat_logic import password_to_aes_key, encode_message_in_ip_header, MessageProcessor, start_sniffing
 import encrypt_decrypt
-from input_validations import validate_all
+from input_validations import validate_all, validate_message_length
 
 
 class SnifferThread(QThread):
@@ -58,6 +58,12 @@ class ChatGUI(QMainWindow):
 
     def send_message(self):
         message = self.msg_entry.text()
+            # Validate message length and content
+        valid_length, error_message = validate_message_length(message)
+        if not valid_length:
+            from PyQt5.QtWidgets import QMessageBox
+            QMessageBox.warning(self, "Message Error", error_message)
+            return  # Do not proceed with sending the message
         if message:
             ciphertext = encrypt_decrypt.encrypt_message_aes(self.key, message)
             # Explicitly specify 'received=False' for sent messages
