@@ -4,7 +4,7 @@ import threading
 import sys
 from chat_logic import password_to_aes_key, encode_message_in_ip_header, MessageProcessor, start_sniffing
 import encrypt_decrypt
-from input_validations import validate_all
+from input_validations import validate_all, validate_message_length
 
 def display_message(message, received=False):
     """
@@ -27,6 +27,11 @@ def send_message(session, interface, target_ip, target_port, key):
             if message.lower() == "exit":
                 print("Exiting chat...")
                 break
+            # Validate message length
+            valid_length, error_message = validate_message_length(message)
+            if not valid_length:
+                print(error_message)  # Display error message and continue to prompt for input
+                continue
             if message:  # Don't process empty messages
                 ciphertext = encrypt_decrypt.encrypt_message_aes(key, message)
                 encode_message_in_ip_header(ciphertext + "\x00", target_ip, target_port)
