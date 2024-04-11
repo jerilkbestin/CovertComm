@@ -3,6 +3,8 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QTextEdit, QLineEdit, QPu
 from PyQt5.QtCore import QThread, pyqtSignal
 from chat_logic import password_to_aes_key, encode_message_in_ip_header, MessageProcessor, start_sniffing
 import encrypt_decrypt
+from input_validations import validate_all
+
 
 class SnifferThread(QThread):
     # Updated signal to include a flag indicating if the message is received
@@ -34,7 +36,7 @@ class ChatGUI(QMainWindow):
         self.sniffer_thread.start()
 
     def initUI(self):
-        self.setWindowTitle("CovertComms Chat")
+        self.setWindowTitle("CovertComm Chat")
         self.setGeometry(100, 100, 600, 400)
 
         layout = QVBoxLayout()
@@ -73,6 +75,14 @@ if __name__ == "__main__":
         print("Usage: python chat_frontend_pyqt.py <network_adapter> <target_ip> <listen_port> <password>")
         sys.exit(1)
 
+    validation_passed, result = validate_all(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
+
+    if not validation_passed:
+        print(result)  # result contains the error message
+        sys.exit(1)
+
+    # Unpack the validated and converted arguments
+    interface, target_ip, listen_port, password = result
     app = QApplication(sys.argv)
     gui = ChatGUI(sys.argv[1], sys.argv[2], int(sys.argv[3]), sys.argv[4])
     gui.show()

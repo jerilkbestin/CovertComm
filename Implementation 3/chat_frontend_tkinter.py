@@ -4,6 +4,7 @@ from threading import Thread
 import sys
 from chat_logic import password_to_aes_key, encode_message_in_ip_header, MessageProcessor, start_sniffing
 import encrypt_decrypt
+from input_validations import validate_all
 
 class ChatGUI:
     def __init__(self, master, interface, target_ip, listen_port, password):
@@ -13,7 +14,7 @@ class ChatGUI:
         self.listen_port = listen_port
         self.key = password_to_aes_key(password)
         
-        master.title("CovertComms Chat")
+        master.title("CovertComm Chat")
 
         # Define a font to be used in the ScrolledText widget
         text_font = font.Font(family='Arial', size=10, weight='normal')  # Example font, adjust as needed
@@ -56,6 +57,15 @@ if __name__ == "__main__":
     if len(sys.argv) != 5:
         print("Usage: python chat_frontend_tkinter.py <network_adapter> <target_ip> <listen_port> <password>")
         sys.exit(1)
+    
+    validation_passed, result = validate_all(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
+
+    if not validation_passed:
+        print(result)  # result contains the error message
+        sys.exit(1)
+
+    # Unpack the validated and converted arguments
+    interface, target_ip, listen_port, password = result
 
     root = tk.Tk()
     app = ChatGUI(root, sys.argv[1], sys.argv[2], int(sys.argv[3]), sys.argv[4])
