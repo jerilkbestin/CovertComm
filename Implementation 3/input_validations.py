@@ -6,28 +6,50 @@ import ipaddress
 import subprocess
 import string
 
+def parse_macos_networksetup(output):
+    """ Parse macOS networksetup output into a dictionary of devices and their hardware ports. """
+    adapters = {}
+    current_port = None
+
+    for line in output.splitlines():
+        if line.startswith("Hardware Port"):
+            current_port = line.split(": ", 1)[1]
+        elif line.startswith("Device") and current_port:
+            device = line.split(": ", 1)[1]
+            adapters[device] = current_port
+
+    return adapters
+
+def validate_network_adapter_darwin(adapter):
+    """ Validate network adapter on macOS. """
+    try:
+        output = subprocess.check_output(["networksetup", "-listallhardwareports"], text=True)
+        adapters = parse_macos_networksetup(output)
+        return adapter in adapters
+    except subprocess.CalledProcessError:
+        return False
+
+def validate_network_adapter_windows(adapter):
+    """ Validate network adapter on Windows using PowerShell. """
+    try:
+        command = ["powershell", "-Command", "Get-NetAdapter | Format-Table -Property Name -HideTableHeaders"]
+        output = subprocess.check_output(command, text=True)
+        adapter_names = output.strip().split('\n')
+        adapter_names = [name.strip() for name in adapter_names if name.strip()]  # Clean up the names
+        return adapter in adapter_names
+    except subprocess.CalledProcessError:
+        return False
+
 def validate_network_adapter(adapter):
+    """ Validate network adapter based on the operating system. """
     os_type = platform.system()
     
     if os_type == "Linux":
-        # Linux: Check if the directory for the adapter exists.
         return os.path.exists(f"/sys/class/net/{adapter}")
-    
     elif os_type == "Darwin":
-        # MacOS: Use ifconfig to see if the adapter is listed.
-        try:
-            output = subprocess.check_output(["ifconfig"], text=True)
-            return adapter in output
-        except Exception:
-            return False
-    
+        return validate_network_adapter_darwin(adapter)
     elif os_type == "Windows":
-        # Windows: Use 'ipconfig' and check for the adapter name.
-        try:
-            output = subprocess.check_output("ipconfig", text=True, shell=True)
-            return adapter in output
-        except Exception:
-            return False
+        return validate_network_adapter_windows(adapter)
 
     return False
 
