@@ -4,7 +4,7 @@ from threading import Thread
 import sys
 from chat_logic import password_to_aes_key, encode_message_in_ip_header, MessageProcessor, start_sniffing
 import encrypt_decrypt
-from input_validations import validate_all
+from input_validations import validate_all, validate_message_length
 
 class ChatGUI:
     def __init__(self, master, interface, target_ip, listen_port, password):
@@ -39,6 +39,11 @@ class ChatGUI:
         
     def send_message(self):
         message = self.msg_entry.get()
+        # Validate message length and content
+        valid_length, error_message = validate_message_length(message)
+        if not valid_length:
+            self.display_message(error_message, sent=True)  # Display error in chat log
+            return  # Do not proceed with sending the message
         if message:
             ciphertext = encrypt_decrypt.encrypt_message_aes(self.key, message)
             encode_message_in_ip_header(ciphertext + "\x00", self.target_ip, self.listen_port)
