@@ -36,7 +36,6 @@ class MessageProcessor:
         self.listen_port = listen_port
         self.key = key
         self.message_callback = message_callback
-        self.is_error = is_error
 
     def packet_callback(self, packet):
         if packet.haslayer(IP) and packet[IP].src == self.target_ip and packet.haslayer(TCP) and packet[TCP].dport == self.listen_port:
