@@ -3,6 +3,7 @@ import random
 import string
 import hashlib
 import encrypt_decrypt
+import chat_communication
 
 def password_to_aes_key(password):
     sha256 = hashlib.sha256()
@@ -10,24 +11,11 @@ def password_to_aes_key(password):
     aes_key = sha256.digest()[:16]
     return aes_key
 
-def generate_random_payload():
-    min_length = 1
-    max_length = 28
-    length = random.randint(min_length, max_length)
-    letters = string.ascii_letters
-    return ''.join(random.choice(letters) for i in range(length))
+
 
 def encode_message_in_ip_header(message, target_ip, target_port):
     parts = [message[i:i+2] for i in range(0, len(message), 2)]
-    for part in parts:
-        ident = int.from_bytes(part.encode(), 'big')
-        payload = generate_random_payload()
-        srcport = random.randint(1024, 65535)
-        try:
-            packet = IP(dst=target_ip, id=ident) / TCP(sport=srcport, dport=target_port) / Raw(load=payload)
-            send(packet, verbose=False)
-        except Exception as e:
-            print(f"Error sending packet: {e}")
+    chat_communication.chat_communicator(parts, target_ip, target_port)
 
 class MessageProcessor:
     def __init__(self, target_ip, listen_port, key, message_callback):
@@ -39,17 +27,20 @@ class MessageProcessor:
 
     def packet_callback(self, packet):
         status = True
+        flags = packet[TCP].flags
         if packet.haslayer(IP) and packet[IP].src == self.target_ip and packet.haslayer(TCP) and packet[TCP].dport == self.listen_port:
-            message_part = self.decode_message_from_ip_header(packet)
-            if message_part:
-                self.whole_message += message_part
-                if self.whole_message.endswith("\x00"):
-                    status, decrypted_message = self.message_decryptor()
-                    
-                    if status:
-                        self.message_callback(decrypted_message)
-                    else:
-                        self.message_callback(status+"CHAT HAS BEEN COMPROMISED. PLEASE RESTART OR DISCONNECT THE CHAT.")
+            if not (flags & 0x02 or flags & 0x01 or flags & 0x10):  # SYN, FIN, or sole ACK
+            # Process packets with data and potential additional flags like PSH
+                message_part = self.decode_message_from_ip_header(packet)
+                if message_part:
+                    self.whole_message += message_part
+                    if self.whole_message.endswith("\x00"):
+                        status, decrypted_message = self.message_decryptor()
+                        
+                        if status:
+                            self.message_callback(decrypted_message)
+                        else:
+                            self.message_callback(status+"CHAT HAS BEEN COMPROMISED. PLEASE RESTART OR DISCONNECT THE CHAT.")
 
     def decode_message_from_ip_header(self, packet):
         ident = packet[IP].id
