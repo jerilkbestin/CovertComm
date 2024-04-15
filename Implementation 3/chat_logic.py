@@ -31,9 +31,12 @@ class MessageProcessor:
     def packet_callback(self, packet):
         status = True
         flags = packet[TCP].flags
-        print(flags)
+        # Define the flag values
+        PSH = 0x08
+        ACK = 0x10
+        PA_ONLY = PSH | ACK  # This combines PSH and ACK
         if packet.haslayer(IP) and packet[IP].src == self.target_ip and packet.haslayer(TCP) and packet[TCP].dport == self.listen_port:
-            if not (flags & 0x02 or flags & 0x01 or flags & 0x10):  # SYN, FIN, or sole ACK
+            if packet[TCP].flags==PA_ONLY:
             # Process packets with data and potential additional flags like PSH
                 print("HIIIIIIIIIIIII")
                 message_part = self.decode_message_from_ip_header(packet)
