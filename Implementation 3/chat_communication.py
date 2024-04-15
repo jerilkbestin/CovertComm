@@ -1,6 +1,8 @@
 from scapy.all import IP, TCP, send, Raw, sr1
 import random
 import string
+import logger_module
+import time
 
 def generate_random_payload():
     min_length = 1
@@ -9,7 +11,7 @@ def generate_random_payload():
     letters = string.ascii_letters
     return ''.join(random.choice(letters) for i in range(length))
 
-def chat_communicator(parts, target_ip, target_port):
+def chat_communicator(parts, target_ip, target_port, length):
 
     # Set up IP and TCP layers for the SYN
     ip = IP(dst=target_ip)
@@ -29,6 +31,7 @@ def chat_communicator(parts, target_ip, target_port):
     # send(ip/tcp_data/Raw(load=data))
     next_seq= syn_ack[TCP].ack + 1
     ack= syn_ack[TCP].seq + 1
+    starttime = time.time()
     for part in parts:
             ident = int.from_bytes(part.encode(), 'big')
             payload = generate_random_payload()
@@ -43,7 +46,6 @@ def chat_communicator(parts, target_ip, target_port):
                 print(f"Error sending packet: {e}")
 
 
-
     # Send FIN to gracefully close the connection
     tcp_fin = TCP(sport=syn_ack[TCP].dport, dport=target_port, flags='FA', seq=next_seq, ack=ack)
     fin_ack = sr1(ip/tcp_fin)
@@ -51,3 +53,7 @@ def chat_communicator(parts, target_ip, target_port):
     # Respond to the server's FIN
     tcp_ack_fin = TCP(sport=syn_ack[TCP].dport, dport=22, flags='A', seq=fin_ack[TCP].ack, ack=fin_ack[TCP].seq + 1)
     send(ip/tcp_ack_fin)
+    endtime = time.time()
+    time_difference=endtime-starttime
+    logger_module.logger(time_difference, length)
+

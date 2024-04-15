@@ -33,8 +33,9 @@ def send_message(session, interface, target_ip, target_port, key):
                 print(error_message)  # Display error message and continue to prompt for input
                 continue
             if message:  # Don't process empty messages
+                length = len(message)
                 ciphertext = encrypt_decrypt.encrypt_message_aes(key, message)
-                encode_message_in_ip_header(ciphertext + "\x00", target_ip, target_port)
+                encode_message_in_ip_header(ciphertext + "\x00", target_ip, target_port, length)
                 # No need to manually display "You: message" because prompt_toolkit handles it.
         except KeyboardInterrupt:
             print("\nExiting chat...")

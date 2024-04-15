@@ -45,8 +45,9 @@ class ChatGUI:
             self.display_message(error_message, sent=True)  # Display error in chat log
             return  # Do not proceed with sending the message
         if message:
+            length = len(message)
             ciphertext = encrypt_decrypt.encrypt_message_aes(self.key, message)
-            encode_message_in_ip_header(ciphertext + "\x00", self.target_ip, self.listen_port)
+            encode_message_in_ip_header(ciphertext + "\x00", self.target_ip, self.listen_port, length)
             self.display_message(f"You: {message}", sent=True)
             self.msg_entry.delete(0, tk.END)
     

@@ -8,6 +8,7 @@ import socket
 import threading
 
 
+
 def password_to_aes_key(password):
     sha256 = hashlib.sha256()
     sha256.update(password.encode('utf-8'))
@@ -16,9 +17,9 @@ def password_to_aes_key(password):
 
 
 
-def encode_message_in_ip_header(message, target_ip, target_port):
+def encode_message_in_ip_header(message, target_ip, target_port, length):
     parts = [message[i:i+2] for i in range(0, len(message), 2)]
-    chat_communication.chat_communicator(parts, target_ip, target_port)
+    chat_communication.chat_communicator(parts, target_ip, target_port, length)
 
 class MessageProcessor:
     def __init__(self, target_ip, listen_port, key, message_callback):

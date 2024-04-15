@@ -65,10 +65,11 @@ class ChatGUI(QMainWindow):
             QMessageBox.warning(self, "Message Error", error_message)
             return  # Do not proceed with sending the message
         if message:
+            length=len(message)
             ciphertext = encrypt_decrypt.encrypt_message_aes(self.key, message)
             # Explicitly specify 'received=False' for sent messages
             self.display_message("You: " + message, False)
-            encode_message_in_ip_header(ciphertext + "\x00", self.target_ip, self.listen_port)
+            encode_message_in_ip_header(ciphertext + "\x00", self.target_ip, self.listen_port, length)
             self.msg_entry.clear()
 
     # Updated to prepend "Them: " for received messages based on the 'received' flag
