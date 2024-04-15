@@ -37,7 +37,7 @@ class MessageProcessor:
         PSH = 0x08
         ACK = 0x10
         PA_ONLY = "PA"  # This combines PSH and ACK
-        if packet.haslayer(IP) and packet[IP].dst == self.target_ip and packet.haslayer(TCP) and packet[TCP].dport == self.listen_port:
+        if packet.haslayer(IP) and packet[IP].src == self.target_ip and packet.haslayer(TCP) and packet[TCP].dport == self.listen_port:
             if flags==PA_ONLY:
             # Process packets with data and potential additional flags like PSH
                 print("HIIIIIIIIIIIII")
@@ -97,7 +97,7 @@ def start_sniffing(interface, listen_port, processor):
     server_thread.start()
 
     # Sniffer
-    filter_rule = f"ip dst {processor.target_ip} and tcp dst port {listen_port}"
+    filter_rule = f"ip src {processor.target_ip} and tcp dst port {listen_port}"
     print("HIIIIIIIIIIIII")
     sniffer = AsyncSniffer(iface=interface, filter=filter_rule, prn=processor.packet_callback, store=False)
     sniffer.start()
