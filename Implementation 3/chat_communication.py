@@ -1,8 +1,8 @@
 from scapy.all import IP, TCP, send, Raw, sr1
 import random
 import string
-import logger_module
-import time
+# import logger_module
+# import time
 
 def generate_random_payload():
     min_length = 1
@@ -31,7 +31,7 @@ def chat_communicator(parts, target_ip, target_port, length):
     # send(ip/tcp_data/Raw(load=data))
     next_seq= syn_ack[TCP].ack + 1
     ack= syn_ack[TCP].seq + 1
-    starttime = time.time()
+    # starttime = time.time()
     for part in parts:
             ident = int.from_bytes(part.encode(), 'big')
             payload = generate_random_payload()
@@ -53,7 +53,8 @@ def chat_communicator(parts, target_ip, target_port, length):
     # Respond to the server's FIN
     tcp_ack_fin = TCP(sport=syn_ack[TCP].dport, dport=22, flags='A', seq=fin_ack[TCP].ack, ack=fin_ack[TCP].seq + 1)
     send(ip/tcp_ack_fin)
-    endtime = time.time()
-    time_difference=endtime-starttime
-    logger_module.logger(time_difference, length)
+    print(length)
+    # endtime = time.time()
+    # time_difference=endtime-starttime
+    # logger_module.logger(time_difference, length)
 
