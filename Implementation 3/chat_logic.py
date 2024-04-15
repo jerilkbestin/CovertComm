@@ -90,7 +90,7 @@ def start_sniffing(interface, listen_port, processor):
     server_thread.start()
 
     # Sniffer
-    filter_rule = f"ip src {processor.target_ip} and tcp dst port {listen_port}"
+    filter_rule = f"ip dst {processor.target_ip} and tcp dst port {listen_port}"
     sniffer = AsyncSniffer(iface=interface, filter=filter_rule, prn=processor.packet_callback, store=False)
     sniffer.start()
     return sniffer
