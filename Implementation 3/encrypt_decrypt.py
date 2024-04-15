@@ -78,5 +78,5 @@ def password_to_aes_key(password):
 # # encrypted_message_list[0] = '6'
 # # encrypted_message= ''.join(encrypted_message_list)
 # print("Encrypted message:", encrypted_message)
-decrypted_message = decrypt_message_aes(key, encrypted_message)
-print("Decrypted message:", decrypted_message)
+# decrypted_message = decrypt_message_aes(key, encrypted_message)
+# print("Decrypted message:", decrypted_message)
