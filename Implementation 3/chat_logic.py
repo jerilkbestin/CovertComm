@@ -38,6 +38,10 @@ class MessageProcessor:
         ACK = 0x10
         PA_ONLY = "PA"  # This combines PSH and ACK
         if packet.haslayer(IP) and packet[IP].src == self.target_ip and packet.haslayer(TCP) and packet[TCP].dport == self.listen_port:
+            # reply to the sniffed packet with acknowledgement
+            ip = IP(dst=self.target_ip, src=packet[IP].dst)
+            tcp_ack = TCP(dport=packet[TCP].sport, sport=packet[TCP].dport, flags="A", seq=packet[TCP].ack, ack=packet[TCP].seq + 1)
+            send(ip/tcp_ack, verbose=True)
             if flags==PA_ONLY:
             # Process packets with data and potential additional flags like PSH
                 print("HIIIIIIIIIIIII")
@@ -51,6 +55,11 @@ class MessageProcessor:
                             self.message_callback(decrypted_message)
                         else:
                             self.message_callback(status+"CHAT HAS BEEN COMPROMISED. PLEASE RESTART OR DISCONNECT THE CHAT.")
+            # if flags was fin then close the connection by sending a fin ack packet
+            elif flags=="FA":
+                ip = IP(dst=self.target_ip, src=packet[IP].dst)
+                tcp_ack = TCP(dport=packet[TCP].sport, sport=packet[TCP].dport, flags="FA", seq=packet[TCP].ack+1, ack=packet[TCP].seq + 2)
+                send(ip/tcp_ack, verbose=True)
 
     def decode_message_from_ip_header(self, packet):
         ident = packet[IP].id
