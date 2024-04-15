@@ -31,7 +31,6 @@ class MessageProcessor:
     def packet_callback(self, packet):
         status = True
         flags = packet[TCP].flags
-        print("HIIIIIIIIIIIII")
         if packet.haslayer(IP) and packet[IP].src == self.target_ip and packet.haslayer(TCP) and packet[TCP].dport == self.listen_port:
             if not (flags & 0x02 or flags & 0x01 or flags & 0x10):  # SYN, FIN, or sole ACK
             # Process packets with data and potential additional flags like PSH
