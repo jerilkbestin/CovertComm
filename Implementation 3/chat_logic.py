@@ -4,6 +4,7 @@ import string
 import hashlib
 import encrypt_decrypt
 import chat_communication
+import socket
 
 def password_to_aes_key(password):
     sha256 = hashlib.sha256()
@@ -55,7 +56,20 @@ class MessageProcessor:
         self.whole_message = ""
         return decrypted_message
 
+def start_server(listen_port):
+    # Create a socket object using IPv4 and TCP protocol
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    # Bind the socket to a public host, and a well-known port
+    server_socket.bind(('', listen_port))  # '' means all available interfaces
+
+    # Become a server socket
+    server_socket.listen(5)  # Allows up to 5 unaccepted connections before refusing new ones
+
+    print(f"Server listening on port {listen_port}")
+
 def start_sniffing(interface, listen_port, processor):
+    start_server(listen_port)
     filter_rule = f"ip src {processor.target_ip} and tcp dst port {listen_port}"
     sniffer = AsyncSniffer(iface=interface, filter=filter_rule, prn=processor.packet_callback, store=False)
     sniffer.start()
