@@ -27,23 +27,25 @@ def chat_communicator(parts, target_ip, target_port):
     # data = "Here is some data to send after the handshake"
     # tcp_data = TCP(sport=syn_ack[TCP].dport, dport=target_port, flags='PA', seq=syn_ack[TCP].ack, ack=syn_ack[TCP].seq + 1)
     # send(ip/tcp_data/Raw(load=data))
-
+    next_seq= syn_ack[TCP].ack + 1
+    ack= syn_ack[TCP].seq + 1
     for part in parts:
             ident = int.from_bytes(part.encode(), 'big')
             payload = generate_random_payload()
             # srcport = random.randint(1024, 65535)
             try:
-                packet = IP(dst=target_ip, id=ident) / TCP(sport=syn_ack[TCP].dport, dport=target_port, flags='PA', seq=syn_ack[TCP].ack, ack=syn_ack[TCP].seq + 1) / Raw(load=payload)
+                packet = IP(dst=target_ip, id=ident) / TCP(sport=syn_ack[TCP].dport, dport=target_port, flags='PA', seq=next_seq, ack=ack) / Raw(load=payload)
                 send(packet, verbose=False)
                 # Increment sequence number by data length for the next segment
-                next_seq = syn_ack[TCP].ack + len(payload)
+                next_seq = next_seq + len(payload)
+                ack=ack+1
             except Exception as e:
                 print(f"Error sending packet: {e}")
 
 
 
     # Send FIN to gracefully close the connection
-    tcp_fin = TCP(sport=syn_ack[TCP].dport, dport=target_port, flags='FA', seq=next_seq, ack=syn_ack[TCP].seq + 1)
+    tcp_fin = TCP(sport=syn_ack[TCP].dport, dport=target_port, flags='FA', seq=next_seq, ack=ack)
     fin_ack = sr1(ip/tcp_fin)
 
     # Respond to the server's FIN
