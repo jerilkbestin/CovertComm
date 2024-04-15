@@ -31,6 +31,7 @@ class MessageProcessor:
     def packet_callback(self, packet):
         status = True
         flags = packet[TCP].flags
+        print(flags)
         # Define the flag values
         PSH = 0x08
         ACK = 0x10
