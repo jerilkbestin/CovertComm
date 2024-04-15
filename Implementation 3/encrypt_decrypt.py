@@ -42,11 +42,14 @@ def encrypt_message_aes(key, message):
 
 
 def decrypt_message_aes(key, ciphertext):
+    print(ciphertext)
     ciphertext = ciphertext.split("#")
     received_hmac = ciphertext[1]
     ciphertext = ciphertext[0]
     iv = ciphertext[:32]
     ciphertext = ciphertext[32:]
+    print(iv)
+    print(ciphertext)
     iv = bytes.fromhex(iv)
     print(received_hmac)
     ciphertext = bytes.fromhex(ciphertext)
@@ -66,14 +69,14 @@ def password_to_aes_key(password):
     aes_key = sha256.digest()[:16]
     return aes_key
 
-# # Example usage:
-# key = password_to_aes_key('my_secret_key')
-# message = "Hello, world!"
+# # # Example usage:
+# key = password_to_aes_key('ahmadahmad')
+# message = "Hello"
 # encrypted_message = encrypt_message_aes(key, message)
 # print(encrypted_message)
-# encrypted_message_list = list(encrypted_message)
-# encrypted_message_list[0] = '6'
-# encrypted_message= ''.join(encrypted_message_list)
+# # encrypted_message_list = list(encrypted_message)
+# # encrypted_message_list[0] = '6'
+# # encrypted_message= ''.join(encrypted_message_list)
 # print("Encrypted message:", encrypted_message)
-# decrypted_message = decrypt_message_aes(key, encrypted_message)
-# print("Decrypted message:", decrypted_message)
+decrypted_message = decrypt_message_aes(key, encrypted_message)
+print("Decrypted message:", decrypted_message)
