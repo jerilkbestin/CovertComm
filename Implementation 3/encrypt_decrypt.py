@@ -55,3 +55,17 @@ def decrypt_message_aes(key, ciphertext):
         decryptor = cipher.decryptor()
         plaintext = decryptor.update(ciphertext) + decryptor.finalize()
         return True, plaintext.decode()
+
+def password_to_aes_key(password):
+    sha256 = hashlib.sha256()
+    sha256.update(password.encode('utf-8'))
+    aes_key = sha256.digest()[:16]
+    return aes_key
+
+# Example usage:
+key = password_to_aes_key('my_secret_key')
+message = "Hello, world!"
+encrypted_message = encrypt_message_aes(key, message)
+print("Encrypted message:", encrypted_message)
+decrypted_message = decrypt_message_aes(key, encrypted_message)
+print("Decrypted message:", decrypted_message)

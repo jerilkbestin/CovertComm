@@ -38,16 +38,18 @@ class MessageProcessor:
         self.message_callback = message_callback
 
     def packet_callback(self, packet):
+        status = True
         if packet.haslayer(IP) and packet[IP].src == self.target_ip and packet.haslayer(TCP) and packet[TCP].dport == self.listen_port:
             message_part = self.decode_message_from_ip_header(packet)
             if message_part:
                 self.whole_message += message_part
                 if self.whole_message.endswith("\x00"):
-                    Status, decrypted_message = self.message_decryptor()
-                    if Status:
+                    status, decrypted_message = self.message_decryptor()
+                    
+                    if status:
                         self.message_callback(decrypted_message)
                     else:
-                        self.message_callback("CHAT HAS BEEN COMPROMISED. PLEASE RESTART OR DISCONNECT THE CHAT.")
+                        self.message_callback(status+"CHAT HAS BEEN COMPROMISED. PLEASE RESTART OR DISCONNECT THE CHAT.")
 
     def decode_message_from_ip_header(self, packet):
         ident = packet[IP].id
