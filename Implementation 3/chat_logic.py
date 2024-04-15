@@ -60,7 +60,7 @@ class MessageProcessor:
             return ""
 
     def message_decryptor(self):
-        decrypted_message = encrypt_decrypt.decrypt_message_aes(self.key, self.whole_message[:-2])
+        decrypted_message = encrypt_decrypt.decrypt_message_aes(self.key, self.whole_message[:-1])
         self.whole_message = ""
         return decrypted_message
 
