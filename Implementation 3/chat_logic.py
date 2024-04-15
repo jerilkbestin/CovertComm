@@ -5,6 +5,8 @@ import hashlib
 import encrypt_decrypt
 import chat_communication
 import socket
+import threading
+
 
 def password_to_aes_key(password):
     sha256 = hashlib.sha256()
@@ -57,19 +59,37 @@ class MessageProcessor:
         return decrypted_message
 
 def start_server(listen_port):
-    # Create a socket object using IPv4 and TCP protocol
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-    # Bind the socket to a public host, and a well-known port
-    server_socket.bind(('', listen_port))  # '' means all available interfaces
-
-    # Become a server socket
-    server_socket.listen(5)  # Allows up to 5 unaccepted connections before refusing new ones
-
+    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    server_socket.bind(('', listen_port))
+    server_socket.listen(5)
     print(f"Server listening on port {listen_port}")
 
+    try:
+        while True:
+            client_socket, addr = server_socket.accept()
+            print(f"Connection established with {addr}")
+            try:
+                # Continuously read data from the connection until it's closed
+                while True:
+                    data = client_socket.recv(1024)
+                    if not data:
+                        # If no data is received, the client has closed the connection
+                        break
+                print(f"Connection closed with {addr}")
+            finally:
+                client_socket.close()
+    finally:
+        server_socket.close()
+        print("Server closed.")
+
 def start_sniffing(interface, listen_port, processor):
-    start_server(listen_port)
+    # Run server in a separate thread to avoid blocking this function
+    server_thread = threading.Thread(target=start_server, args=(listen_port,))
+    server_thread.daemon = True  # Make the thread daemon so it exits with the main program
+    server_thread.start()
+
+    # Sniffer
     filter_rule = f"ip src {processor.target_ip} and tcp dst port {listen_port}"
     sniffer = AsyncSniffer(iface=interface, filter=filter_rule, prn=processor.packet_callback, store=False)
     sniffer.start()
