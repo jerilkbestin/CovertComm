@@ -34,7 +34,7 @@ class MessageProcessor:
         # Define the flag values
         PSH = 0x08
         ACK = 0x10
-        PA_ONLY = PSH | ACK  # This combines PSH and ACK
+        PA_ONLY = "PA"  # This combines PSH and ACK
         if packet.haslayer(IP) and packet[IP].src == self.target_ip and packet.haslayer(TCP) and packet[TCP].dport == self.listen_port:
             if packet[TCP].flags==PA_ONLY:
             # Process packets with data and potential additional flags like PSH
