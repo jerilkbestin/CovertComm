@@ -1,24 +1,25 @@
 import os
 import hmac
+import hashlib
 from hashlib import sha256
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from cryptography.hazmat.primitives import hashes
 
-def expand_key(key):
-    hkdf = HKDF(
-        algorithm=hashes.SHA256(),
-        length=32,  # 32 bytes = 256 bits
-        salt=None,  # Salt is not used
-        info=b'HKDF key expansion',
-        backend=default_backend()
-    )
-    derived_key = hkdf.derive(key)
-    return derived_key
+# def expand_key(key):
+#     hkdf = HKDF(
+#         algorithm=hashes.SHA256(),
+#         length=32,  # 32 bytes = 256 bits
+#         salt=None,  # Salt is not used
+#         info=b'HKDF key expansion',
+#         backend=default_backend()
+#     )
+#     derived_key = hkdf.derive(key)
+#     return derived_key
 
 def generate_hmac(key, message):
-    h = hmac.new(key, message, sha256)
+    h = hmac.new(key, message, hashlib.sha1)
     return h.digest()
 
 def verify_hmac(key, message, received_hmac):
@@ -26,29 +27,32 @@ def verify_hmac(key, message, received_hmac):
     return hmac.compare_digest(calculated_hmac, received_hmac)
 
 def encrypt_message_aes(key, message):
-    new_key = expand_key(key)
     iv = os.urandom(16)
     cipher = Cipher(algorithms.AES(key), modes.CFB(iv), backend=default_backend())
     encryptor = cipher.encryptor()
     ciphertext = encryptor.update(message.encode()) + encryptor.finalize()
-    hmac_digest = generate_hmac(new_key, iv + ciphertext)
-    # hexa bytes to ascii
+    hmac_digest = generate_hmac(key, iv + ciphertext)
     iv = iv.hex()
     ciphertext = ciphertext.hex()
     hmac_digest = hmac_digest.hex()
     # hexa to ascii
     
-    return iv + ciphertext + hmac_digest
+    return iv + ciphertext + "#"+ hmac_digest
+
+
 
 def decrypt_message_aes(key, ciphertext):
-    new_key = expand_key(key)
+    ciphertext = ciphertext.split("#")
+    received_hmac = ciphertext[1]
+    ciphertext = ciphertext[0]
     iv = ciphertext[:32]
-    ciphertext = ciphertext[32:-64]
-    received_hmac = ciphertext[-64:]
+    ciphertext = ciphertext[32:]
     iv = bytes.fromhex(iv)
+    print(received_hmac)
     ciphertext = bytes.fromhex(ciphertext)
     received_hmac = bytes.fromhex(received_hmac)
-    if not verify_hmac(new_key, iv + ciphertext, received_hmac):
+    print(verify_hmac(key, iv + ciphertext, received_hmac))
+    if not verify_hmac(key, iv + ciphertext, received_hmac):
         return False, "HMAC verification failed"
     else:
         cipher = Cipher(algorithms.AES(key), modes.CFB(iv), backend=default_backend())
@@ -62,10 +66,14 @@ def password_to_aes_key(password):
     aes_key = sha256.digest()[:16]
     return aes_key
 
-# Example usage:
-key = password_to_aes_key('my_secret_key')
-message = "Hello, world!"
-encrypted_message = encrypt_message_aes(key, message)
-print("Encrypted message:", encrypted_message)
-decrypted_message = decrypt_message_aes(key, encrypted_message)
-print("Decrypted message:", decrypted_message)
+# # Example usage:
+# key = password_to_aes_key('my_secret_key')
+# message = "Hello, world!"
+# encrypted_message = encrypt_message_aes(key, message)
+# print(encrypted_message)
+# encrypted_message_list = list(encrypted_message)
+# encrypted_message_list[0] = '6'
+# encrypted_message= ''.join(encrypted_message_list)
+# print("Encrypted message:", encrypted_message)
+# decrypted_message = decrypt_message_aes(key, encrypted_message)
+# print("Decrypted message:", decrypted_message)
