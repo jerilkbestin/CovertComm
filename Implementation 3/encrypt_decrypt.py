@@ -35,6 +35,7 @@ def encrypt_message_aes(key, message):
     iv = iv.hex()
     ciphertext = ciphertext.hex()
     hmac_digest = hmac_digest.hex()
+    print(hmac_digest)
     # hexa to ascii
     
     return iv + ciphertext + "#"+ hmac_digest
