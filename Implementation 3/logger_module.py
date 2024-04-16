@@ -19,7 +19,7 @@ def logger(time_difference, length):
 
     # Structured data to log
     log_entry = {
-        'text': 'The latency for message of length {length} is {time_difference} seconds.',
+        'text': f'The latency for message of length {length} is {time_difference} seconds.',
         'length of message': length,
         'Time': time_difference
     }
