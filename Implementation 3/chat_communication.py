@@ -19,11 +19,11 @@ def chat_communicator(parts, target_ip, target_port, length):
     tcp_syn = TCP(dport=target_port, sport=srcport, flags="S", seq=1000)
 
     # Send SYN and get SYN-ACK
-    syn_ack = sr1(ip/tcp_syn)
+    syn_ack = sr1(ip/tcp_syn, verbose=False)
 
     # Send ACK for SYN-ACK
     ack = TCP(sport=syn_ack[TCP].dport, dport=target_port, flags="A", seq=syn_ack[TCP].ack, ack=syn_ack[TCP].seq + 1)
-    send(ip/ack)
+    send(ip/ack, verbose=False)
 
     # Send data after the handshake
     # data = "Here is some data to send after the handshake"

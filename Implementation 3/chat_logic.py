@@ -41,7 +41,7 @@ class MessageProcessor:
             # reply to the sniffed packet with acknowledgement
             ip = IP(dst=self.target_ip, src=packet[IP].dst)
             tcp_ack = TCP(dport=packet[TCP].sport, sport=packet[TCP].dport, flags="A", seq=packet[TCP].ack, ack=packet[TCP].seq + 1)
-            send(ip/tcp_ack, verbose=True)
+            send(ip/tcp_ack, verbose=False)
             if flags==PA_ONLY:
             # Process packets with data and potential additional flags like PSH
               
