@@ -57,6 +57,7 @@ if __name__ == "__main__":
 
     key = password_to_aes_key(password)
 
+    # This is where the front end is listening to the chat logic code for messages to display
     processor = MessageProcessor(target_ip, int(listen_port), key, lambda msg: display_message(msg, True))
     sniffer_thread = threading.Thread(target=lambda: start_sniffing(interface, int(listen_port), processor), daemon=True)
     sniffer_thread.start()

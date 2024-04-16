@@ -30,6 +30,7 @@ class ChatGUI(QMainWindow):
         self.initUI()
 
         # Pass a lambda to prepend "Them: " for received messages
+        # This is where the front end is listening to the chat logic code for messages to display
         self.processor = MessageProcessor(target_ip, listen_port, self.key, lambda msg: self.display_message(msg, True))
         self.sniffer_thread = SnifferThread(interface, listen_port, self.processor)
         self.sniffer_thread.new_message_signal.connect(lambda msg, received: self.display_message(msg, received))

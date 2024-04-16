@@ -33,6 +33,7 @@ class ChatGUI:
         self.send_button = tk.Button(self.entry_frame, text="Send", command=self.send_message)
         self.send_button.pack(side=tk.RIGHT)
 
+        # This is where the front end is listening to the chat logic code for messages to display
         self.processor = MessageProcessor(target_ip, listen_port, self.key, self.display_message)
         self.sniffer_thread = Thread(target=lambda: start_sniffing(interface, listen_port, self.processor), daemon=True)
         self.sniffer_thread.start()

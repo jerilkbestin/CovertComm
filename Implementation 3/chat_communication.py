@@ -1,6 +1,8 @@
 from scapy.all import IP, TCP, send, Raw, sr1
 import random
 import string
+
+# The following modules were used to log the time taken for the message to be sent
 # import logger_module
 # import time
 
@@ -25,13 +27,14 @@ def chat_communicator(parts, target_ip, target_port, length):
     ack = TCP(sport=syn_ack[TCP].dport, dport=target_port, flags="A", seq=syn_ack[TCP].ack, ack=syn_ack[TCP].seq + 1)
     send(ip/ack, verbose=False)
 
-    # Send data after the handshake
-    # data = "Here is some data to send after the handshake"
-    # tcp_data = TCP(sport=syn_ack[TCP].dport, dport=target_port, flags='PA', seq=syn_ack[TCP].ack, ack=syn_ack[TCP].seq + 1)
-    # send(ip/tcp_data/Raw(load=data))
+    # Send the message in parts
     next_seq= syn_ack[TCP].ack + 1
-    ack= syn_ack[TCP].seq + 1
+    ack= syn_ack[TCP].seq+1
+
+    # code for calculating time taken to send the message
     # starttime = time.time()
+
+    # sending the message in parts
     for part in parts:
             ident = int.from_bytes(part.encode(), 'big')
             payload = generate_random_payload()
@@ -53,6 +56,9 @@ def chat_communicator(parts, target_ip, target_port, length):
     # Respond to the server's FIN
     tcp_ack_fin = TCP(sport=syn_ack[TCP].dport, dport=22, flags='A', seq=fin_ack[TCP].ack, ack=fin_ack[TCP].seq + 1)
     send(ip/tcp_ack_fin, verbose=False)
+
+    # code for uploading logs for graphing
+
     # endtime = time.time()
     # time_difference=endtime-starttime
     # logger_module.logger(time_difference, length)
