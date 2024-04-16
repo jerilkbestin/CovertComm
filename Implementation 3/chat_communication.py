@@ -48,12 +48,11 @@ def chat_communicator(parts, target_ip, target_port, length):
 
     # Send FIN to gracefully close the connection
     tcp_fin = TCP(sport=syn_ack[TCP].dport, dport=target_port, flags='FA', seq=next_seq, ack=ack)
-    fin_ack = sr1(ip/tcp_fin)
+    fin_ack = sr1(ip/tcp_fin, verbose=False)
 
     # Respond to the server's FIN
     tcp_ack_fin = TCP(sport=syn_ack[TCP].dport, dport=22, flags='A', seq=fin_ack[TCP].ack, ack=fin_ack[TCP].seq + 1)
-    send(ip/tcp_ack_fin)
-    print(length)
+    send(ip/tcp_ack_fin, verbose=False)
     # endtime = time.time()
     # time_difference=endtime-starttime
     # logger_module.logger(time_difference, length)
