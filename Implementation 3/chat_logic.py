@@ -59,7 +59,7 @@ class MessageProcessor:
             elif flags=="FA":
                 ip = IP(dst=self.target_ip, src=packet[IP].dst)
                 tcp_ack = TCP(dport=packet[TCP].sport, sport=packet[TCP].dport, flags="FA", seq=packet[TCP].ack+1, ack=packet[TCP].seq + 2)
-                send(ip/tcp_ack, verbose=True)
+                send(ip/tcp_ack, verbose=False)
 
     def decode_message_from_ip_header(self, packet):
         ident = packet[IP].id
