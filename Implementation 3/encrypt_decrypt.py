@@ -48,10 +48,8 @@ def decrypt_message_aes(key, ciphertext):
     iv = ciphertext[:32]
     ciphertext = ciphertext[32:]
     iv = bytes.fromhex(iv)
-    print(received_hmac)
     ciphertext = bytes.fromhex(ciphertext)
     received_hmac = bytes.fromhex(received_hmac)
-    print(verify_hmac(key, iv + ciphertext, received_hmac))
     if not verify_hmac(key, iv + ciphertext, received_hmac):
         return False, "HMAC verification failed"
     else:
@@ -65,7 +63,7 @@ def password_to_aes_key(password):
     sha256.update(password.encode('utf-8'))
     aes_key = sha256.digest()[:16]
     return aes_key
-
+## Testing:
 # # Example usage:
 # key = password_to_aes_key('my_secret_key')
 # message = "Hello, world!"
