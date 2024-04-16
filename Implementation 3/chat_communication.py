@@ -19,11 +19,11 @@ def chat_communicator(parts, target_ip, target_port, length):
     tcp_syn = TCP(dport=target_port, sport=srcport, flags="S", seq=1000)
 
     # Send SYN and get SYN-ACK
-    syn_ack = sr1(ip/tcp_syn)
+    syn_ack = sr1(ip/tcp_syn, verbose = False)
 
     # Send ACK for SYN-ACK
     ack = TCP(sport=syn_ack[TCP].dport, dport=target_port, flags="A", seq=syn_ack[TCP].ack, ack=syn_ack[TCP].seq + 1)
-    send(ip/ack)
+    send(ip/ack, verbose = False)
 
     # Send data after the handshake
     # data = "Here is some data to send after the handshake"
@@ -48,11 +48,11 @@ def chat_communicator(parts, target_ip, target_port, length):
 
     # Send FIN to gracefully close the connection
     tcp_fin = TCP(sport=syn_ack[TCP].dport, dport=target_port, flags='FA', seq=next_seq, ack=ack)
-    fin_ack = sr1(ip/tcp_fin)
+    fin_ack = sr1(ip/tcp_fin, verbose = False)
 
     # Respond to the server's FIN
     tcp_ack_fin = TCP(sport=syn_ack[TCP].dport, dport=22, flags='A', seq=fin_ack[TCP].ack, ack=fin_ack[TCP].seq + 1)
-    send(ip/tcp_ack_fin)
+    send(ip/tcp_ack_fin, verbose = False)
     endtime = time.time()
     time_difference=endtime-starttime
 
@@ -62,7 +62,7 @@ def chat_communicator(parts, target_ip, target_port, length):
          #stop the connection by sending an ack
         ip = IP(dst=target_ip, src=packet[IP].dst)
         tcp_ack = TCP(dport=packet[TCP].sport, sport=packet[TCP].dport, flags="A", seq=packet[TCP].ack, ack=packet[TCP].seq + 1)
-        send(ip/tcp_ack, verbose=True)
+        send(ip/tcp_ack, verbose=False)
     
     
     logger_module.logger(time_difference, length)
