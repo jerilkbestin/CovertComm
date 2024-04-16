@@ -49,7 +49,7 @@ class MessageProcessor:
                     if status:
                         self.message_callback(decrypted_message)
                     else:
-                        self.message_callback(status+"CHAT HAS BEEN COMPROMISED. PLEASE RESTART OR DISCONNECT THE CHAT.")
+                        self.message_callback("CHAT HAS BEEN COMPROMISED. PLEASE RESTART OR DISCONNECT THE CHAT.")
 
     def decode_message_from_ip_header(self, packet):
         ident = packet[IP].id
