@@ -55,5 +55,14 @@ def chat_communicator(parts, target_ip, target_port, length):
     send(ip/tcp_ack_fin)
     endtime = time.time()
     time_difference=endtime-starttime
-    logger_module.logger(time_difference, length)
 
+    flags = str(packet[TCP].flags)
+
+    if flags=="R":
+         #stop the connection by sending an ack
+        ip = IP(dst=target_ip, src=packet[IP].dst)
+        tcp_ack = TCP(dport=packet[TCP].sport, sport=packet[TCP].dport, flags="A", seq=packet[TCP].ack, ack=packet[TCP].seq + 1)
+        send(ip/tcp_ack, verbose=True)
+    
+    
+    logger_module.logger(time_difference, length)

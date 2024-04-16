@@ -1,11 +1,14 @@
-from google.cloud import logging
+import google.cloud.logging
 from datetime import datetime
 from datetime import datetime
+import os
 
 
 def logger(time_difference, length):
+    # Google Cloud credentials setup
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/ubuntu/spheric-rhythm-414505-6ee966d379b0.json"
     # Instantiates a client
-    logging_client = logging.Client()
+    logging_client = google.cloud.logging.Client()
 
     # The name of the log to write to
     log_name = 'covertcomm-latency-logs'
