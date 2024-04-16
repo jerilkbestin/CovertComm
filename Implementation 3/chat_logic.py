@@ -32,8 +32,6 @@ class MessageProcessor:
     def packet_callback(self, packet):
         status = True
         flags = str(packet[TCP].flags)
-        print(flags)
-        print(type(flags))
         # Define the flag values
         PSH = 0x08
         ACK = 0x10
@@ -45,7 +43,6 @@ class MessageProcessor:
             send(ip/tcp_ack, verbose=True)
             if flags==PA_ONLY:
             # Process packets with data and potential additional flags like PSH
-                print("HIIIIIIIIIIIII")
                 message_part = self.decode_message_from_ip_header(packet)
                 if message_part:
                     self.whole_message += message_part
@@ -108,7 +105,6 @@ def start_sniffing(interface, listen_port, processor):
 
     # Sniffer
     filter_rule = f"ip src {processor.target_ip} and tcp dst port {listen_port}"
-    print("HIIIIIIIIIIIII")
     sniffer = AsyncSniffer(iface=interface, filter=filter_rule, prn=processor.packet_callback, store=False)
     sniffer.start()
     return sniffer
