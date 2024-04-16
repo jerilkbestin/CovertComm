@@ -48,10 +48,9 @@ def decrypt_message_aes(key, ciphertext):
     iv = ciphertext[:32]
     ciphertext = ciphertext[32:]
     iv = bytes.fromhex(iv)
-    print(received_hmac)
     ciphertext = bytes.fromhex(ciphertext)
     received_hmac = bytes.fromhex(received_hmac)
-    print(verify_hmac(key, iv + ciphertext, received_hmac))
+
     if not verify_hmac(key, iv + ciphertext, received_hmac):
         return False, "HMAC verification failed"
     else:
