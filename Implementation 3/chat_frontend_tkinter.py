@@ -4,6 +4,7 @@ from threading import Thread
 import sys
 from chat_logic import password_to_aes_key, encode_message_in_ip_header, MessageProcessor, start_sniffing
 import encrypt_decrypt
+from input_validations import validate_all, validate_message_length
 
 class ChatGUI:
     def __init__(self, master, interface, target_ip, listen_port, password):
@@ -32,15 +33,22 @@ class ChatGUI:
         self.send_button = tk.Button(self.entry_frame, text="Send", command=self.send_message)
         self.send_button.pack(side=tk.RIGHT)
 
+        # This is where the front end is listening to the chat logic code for messages to display
         self.processor = MessageProcessor(target_ip, listen_port, self.key, self.display_message)
         self.sniffer_thread = Thread(target=lambda: start_sniffing(interface, listen_port, self.processor), daemon=True)
         self.sniffer_thread.start()
         
     def send_message(self):
         message = self.msg_entry.get()
+        # Validate message length and content
+        valid_length, error_message = validate_message_length(message)
+        if not valid_length:
+            self.display_message(error_message, sent=True)  # Display error in chat log
+            return  # Do not proceed with sending the message
         if message:
+            length = len(message)
             ciphertext = encrypt_decrypt.encrypt_message_aes(self.key, message)
-            encode_message_in_ip_header(ciphertext + "\x00", self.target_ip, self.listen_port)
+            encode_message_in_ip_header(ciphertext + "\x00", self.target_ip, self.listen_port, length)
             self.display_message(f"You: {message}", sent=True)
             self.msg_entry.delete(0, tk.END)
     
@@ -56,6 +64,15 @@ if __name__ == "__main__":
     if len(sys.argv) != 5:
         print("Usage: python chat_frontend_tkinter.py <network_adapter> <target_ip> <listen_port> <password>")
         sys.exit(1)
+    
+    validation_passed, result = validate_all(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
+
+    if not validation_passed:
+        print(result)  # result contains the error message
+        sys.exit(1)
+
+    # Unpack the validated and converted arguments
+    interface, target_ip, listen_port, password = result
 
     root = tk.Tk()
     app = ChatGUI(root, sys.argv[1], sys.argv[2], int(sys.argv[3]), sys.argv[4])
